@@ -36,3 +36,40 @@ func TestProductService_Get(t *testing.T) {
 	// Verifica se o produto retornado é igual ao produto esperado
 	require.Equal(t, product, result)
 }
+
+func TestProductService_Create(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	product := mockApplication.NewMockProductInterface(ctrl)
+
+	persistence := mockApplication.NewMockProductPersistenceInterface(ctrl)
+	persistence.EXPECT().Save(gomock.Any()).Return(product, nil).AnyTimes()
+
+	service := application.ProductService{Persistence: persistence}
+
+	result, err := service.Create("Product 1", 10.2)
+	require.Nil(t, err)
+	require.Equal(t, product, result)
+}
+
+func TestProductService_EnableDisable(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	product := mockApplication.NewMockProductInterface(ctrl)
+
+	product.EXPECT().Enable().Return(nil)
+	product.EXPECT().Disable().Return(nil)
+
+	persistence := mockApplication.NewMockProductPersistenceInterface(ctrl)
+	persistence.EXPECT().Save(gomock.Any()).Return(product, nil).AnyTimes()
+
+	service := application.ProductService{Persistence: persistence}
+
+	result, err := service.Enable(product)
+	require.Nil(t, err)
+	require.Equal(t, product, result)
+
+	result, err = service.Disable(product)
+	require.Nil(t, err)
+	require.Equal(t, product, result)
+}
